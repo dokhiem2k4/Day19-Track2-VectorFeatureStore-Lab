@@ -17,8 +17,13 @@
 # %%
 import _setup  # noqa: F401
 import subprocess
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+# feast CLI trong venv (Windows: .venv/Scripts/feast.exe)
+_venv = Path(sys.executable).parent
+FEAST_BIN = str(_venv / "feast.exe") if (_venv / "feast.exe").exists() else "feast"
 
 import polars as pl
 
@@ -84,7 +89,7 @@ for p in sorted(FEAST_DATA.glob("*.parquet")):
 
 # %%
 res = subprocess.run(
-    ["feast", "apply"],
+    [FEAST_BIN, "apply"],
     cwd=str(FEAST_DIR),
     capture_output=True, text=True, check=False,
 )
@@ -104,7 +109,7 @@ assert res.returncode == 0, f"feast apply failed: {res.stderr}"
 # %%
 end_dt = NOW.strftime("%Y-%m-%dT%H:%M:%S")
 res = subprocess.run(
-    ["feast", "materialize-incremental", end_dt],
+    [FEAST_BIN, "materialize-incremental", end_dt],
     cwd=str(FEAST_DIR),
     capture_output=True, text=True, check=False,
 )
